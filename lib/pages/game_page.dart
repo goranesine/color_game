@@ -1,52 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rendering_testing/gameLogic.dart';
 
 class GamePage extends StatelessWidget {
-  const GamePage({super.key});
+   const GamePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    double _height = MediaQuery.of(context).size.height;
+
     return ChangeNotifierProvider(
         create: (context) => GameLogic(),
         child: Scaffold(body: Consumer<GameLogic>(
           builder: (context, value, child) {
             return Stack(children: [
-              GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount:
-                      context.watch<GameLogic>().playerOneIsActive.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 1.0,
-                    crossAxisSpacing: 1.0,
-                    childAspectRatio: 1.3,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  /// player one board
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      height: _height/2,
+                      child: GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount:
+                              context.watch<GameLogic>().colorsPlayerOne.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 1.0,
+                            crossAxisSpacing: 1.0,
+                            childAspectRatio: 1.3,
+                          ),
+                          itemBuilder: (context, index) => GestureDetector(
+                                onTap: () => value.gameLoop(1, index),
+                                child: Card(
+                                  shadowColor: Colors.white,
+                                  color: value.playerOneIsTapped[index] == false
+                                      ? Colors.redAccent
+                                      : value.colorsPlayerOne[index],
+                                ),
+                              )),
+                    ),
                   ),
-                  itemBuilder: (context, index) => GestureDetector(
-                        onTap: () => value.gameLoop(1, index),
-                        child: Card(
-                          color: getColor(value, index),
-                        ),
-                      ))
+                  /// player two board
+                  Align(
+                   alignment: Alignment.bottomCenter,
+                    child: RotatedBox(
+                      quarterTurns: 2,
+                      child: SizedBox(
+                        height: _height/2,
+                        child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount:
+                                context.watch<GameLogic>().colorsPlayerTwo.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              mainAxisSpacing: 1.0,
+                              crossAxisSpacing: 1.0,
+                              childAspectRatio: 1.3,
+                            ),
+                            itemBuilder: (context, index) => GestureDetector(
+                                  onTap: () => value.gameLoop(2, index),
+                                  child: Card(
+                                    color: value.playerTwoIsTapped[index] == false
+                                        ? Colors.redAccent
+                                        : value.colorsPlayerTwo[index],
+                                  ),
+                                )),
+                      ),
+                    ),
+                  )
+                ],
+              )
             ]);
           },
         )));
-  }
-
-  Color getColor(GameLogic value, int index) {
-    late Color newColor;
-    if (value.playerOneIsTapped[index] == false &&
-        value.playerOneIsActive[index] == true) {
-      newColor = Colors.redAccent;
-    }
-    if (value.playerOneIsTapped[index] == true &&
-        value.playerOneIsActive[index] == true) {
-      newColor = value.colorsPlayerOne[index];
-    }
-    if (value.playerOneIsActive[index] == false) {
-      newColor = Colors.transparent;
-    }
-    return newColor;
   }
 }

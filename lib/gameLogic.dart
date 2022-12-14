@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 class GameLogic extends ChangeNotifier {
   int numberOfBlocks = 16;
   List<bool> playerOneIsTapped = List.generate(16, (index) => false);
-  List<bool> playerOneIsActive = List.generate(16, (index) => true);
   List<Color> colorsPlayerOne = [
     Colors.amber,
     Colors.purple,
@@ -26,7 +25,6 @@ class GameLogic extends ChangeNotifier {
     Colors.pink,
   ];
   List<bool> playerTwoIsTapped = List.generate(16, (index) => false);
-  List<bool> playerTwoIsActive = List.generate(16, (index) => true);
   List<Color> colorsPlayerTwo = [
     Colors.amber,
     Colors.purple,
@@ -53,14 +51,65 @@ class GameLogic extends ChangeNotifier {
   bool playerTwoWon = false;
 
   GameLogic() {
-    colorsPlayerOne.shuffle();
+  //  colorsPlayerOne.shuffle();
+  //  colorsPlayerTwo.shuffle();
+  }
+
+  void startNewGame() {
+    numberOfBlocks = 16;
+    playerOneIsTapped = List.generate(16, (index) => false);
+    colorsPlayerOne = [
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+    ];
+    playerTwoIsTapped = List.generate(16, (index) => false);
+    colorsPlayerTwo = [
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+      Colors.amber,
+      Colors.purple,
+      Colors.cyan,
+      Colors.pink,
+    ];
+    playerOneTappedColors = {};
+    playerTwoTappedColors = {};
+    playerOneColorMatched = false;
+    playerTwoColorMatched = false;
+    playerOneWon = false;
+    playerTwoWon = false;
   }
 
   void gameLoop(int player, int blockIndex) {
     handleUserInput(player, blockIndex);
-    Future.delayed(const Duration(seconds: 1), () => updateStatesPlayerOne());
-    // updateStates();
-    // redrawGraphics();
+    player == 1
+        ? Future.delayed(
+            const Duration(seconds: 1), () => updateStatesPlayerOne())
+        : Future.delayed(
+            const Duration(seconds: 1), () => updateStatesPlayerTwo());
   }
 
   void handleUserInput(int player, int blockIndex) {
@@ -69,8 +118,7 @@ class GameLogic extends ChangeNotifier {
 
   void playerOneTap(int blockIndex) {
     if (playerOneIsTapped[blockIndex] == false &&
-        playerOneTappedColors.length < 4 &&
-        playerOneIsActive[blockIndex] == true) {
+        playerOneTappedColors.length < 4) {
       playerOneTappedColors[blockIndex] = colorsPlayerOne[blockIndex];
       playerOneIsTapped[blockIndex] = true;
       notifyListeners();
@@ -78,10 +126,12 @@ class GameLogic extends ChangeNotifier {
   }
 
   void playerTwoTap(int blockIndex) {
-    playerTwoTappedColors[blockIndex] = colorsPlayerTwo[blockIndex];
-    playerTwoIsTapped[blockIndex] == false
-        ? playerTwoIsTapped[blockIndex] = true
-        : playerTwoIsTapped[blockIndex] = false;
+    if (playerTwoIsTapped[blockIndex] == false &&
+        playerTwoTappedColors.length < 4) {
+      playerTwoTappedColors[blockIndex] = colorsPlayerTwo[blockIndex];
+      playerTwoIsTapped[blockIndex] = true;
+      notifyListeners();
+    }
   }
 
   void updateStatesPlayerOne() {
@@ -103,19 +153,64 @@ class GameLogic extends ChangeNotifier {
     }
   }
 
+  void updateStatesPlayerTwo() {
+    if (playerTwoTappedColors.length == 4) {
+      if (playerTwoTappedColors.values.elementAt(0) ==
+              playerTwoTappedColors.values.elementAt(1) &&
+          playerTwoTappedColors.values.elementAt(0) ==
+              playerTwoTappedColors.values.elementAt(2) &&
+          playerTwoTappedColors.values.elementAt(0) ==
+              playerTwoTappedColors.values.elementAt(3)) {
+        playerTwoColorMatched = true;
+        notifyListeners();
+        playerTwoColorsMatched();
+      } else {
+        playerTwoTappedColors.clear();
+        playerTwoIsTapped = List<bool>.filled(playerTwoIsTapped.length, false);
+        notifyListeners();
+      }
+    }
+  }
+
   void playerOneColorsMatched() {
-    playerOneIsActive[playerOneTappedColors.keys.elementAt(0)] = false;
-    playerOneIsActive[playerOneTappedColors.keys.elementAt(1)] = false;
-    playerOneIsActive[playerOneTappedColors.keys.elementAt(2)] = false;
-    playerOneIsActive[playerOneTappedColors.keys.elementAt(3)] = false;
+    colorsPlayerOne
+        .removeWhere((element) => element == playerOneTappedColors[0]);
+    colorsPlayerOne
+        .removeWhere((element) => element == playerOneTappedColors[1]);
+    colorsPlayerOne
+        .removeWhere((element) => element == playerOneTappedColors[2]);
+    colorsPlayerOne
+        .removeWhere((element) => element == playerOneTappedColors[3]);
+
     playerOneTappedColors.clear();
     playerOneIsTapped = List<bool>.filled(playerOneIsTapped.length, false);
-    if (playerOneIsActive.every((element) => element == false)) {
+    if (colorsPlayerOne.isEmpty) {
       playerOneWon = true;
     }
     notifyListeners();
     Future.delayed(
         const Duration(seconds: 2), () => playerOneColorMatched = false);
+    notifyListeners();
+  }
+
+  void playerTwoColorsMatched() {
+    colorsPlayerTwo
+        .removeWhere((element) => element == playerTwoTappedColors[0]);
+    colorsPlayerTwo
+        .removeWhere((element) => element == playerTwoTappedColors[1]);
+    colorsPlayerTwo
+        .removeWhere((element) => element == playerTwoTappedColors[2]);
+    colorsPlayerTwo
+        .removeWhere((element) => element == playerTwoTappedColors[3]);
+
+    playerTwoTappedColors.clear();
+    playerTwoIsTapped = List<bool>.filled(playerTwoIsTapped.length, false);
+    if (colorsPlayerTwo.isEmpty) {
+      playerTwoWon = true;
+    }
+    notifyListeners();
+    Future.delayed(
+        const Duration(seconds: 2), () => playerTwoColorMatched = false);
     notifyListeners();
   }
 }
