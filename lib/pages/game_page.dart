@@ -9,30 +9,28 @@ class GamePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
         create: (context) => GameLogic(),
-        child: Scaffold(
-            body: Stack(
-          children: [
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 16,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                mainAxisSpacing: 1.0,
-                crossAxisSpacing: 1.0,
-                childAspectRatio: 1.3,
-              ),
-              itemBuilder: (context, index) =>
-                  Consumer<GameLogic>(builder: (context, value, child) {
-                return GestureDetector(
-                  onTap: () => value.gameLoop(1, index),
-                  child: Card(
-                    color: getColor(value, index),
+        child: Scaffold(body: Consumer<GameLogic>(
+          builder: (context, value, child) {
+            return Stack(children: [
+              GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount:
+                      context.watch<GameLogic>().playerOneIsActive.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 1.0,
+                    crossAxisSpacing: 1.0,
+                    childAspectRatio: 1.3,
                   ),
-                );
-              }),
-            ),
-          ],
+                  itemBuilder: (context, index) => GestureDetector(
+                        onTap: () => value.gameLoop(1, index),
+                        child: Card(
+                          color: getColor(value, index),
+                        ),
+                      ))
+            ]);
+          },
         )));
   }
 
