@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:rendering_testing/pages/game_page.dart';
+import 'package:rendering_testing/pages/game_page_testing.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
 
 
       theme: ThemeData.dark(),
-      home:  const GamePage(),
+      home:   const GamePage(),
     );
   }
 }

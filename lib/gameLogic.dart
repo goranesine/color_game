@@ -49,12 +49,21 @@ class GameLogic extends ChangeNotifier {
   bool playerTwoColorMatched = false;
   bool playerOneWon = false;
   bool playerTwoWon = false;
-
+late Timer blackHoleTimer;
+double radius = -550;
   GameLogic() {
+    blackHoleTimer =  Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
+        radius == 0 ? radius = -550 : radius++;
+        notifyListeners();
+    });
     //  colorsPlayerOne.shuffle();
     //  colorsPlayerTwo.shuffle();
   }
-
+  @override
+  void dispose() {
+blackHoleTimer.cancel();
+super.dispose();
+  }
   void startNewGame() {
     numberOfBlocks = 16;
     playerOneIsTapped = List.generate(16, (index) => false);
@@ -101,6 +110,7 @@ class GameLogic extends ChangeNotifier {
     playerTwoColorMatched = false;
     playerOneWon = false;
     playerTwoWon = false;
+    notifyListeners();
   }
 
   void gameLoop(int player, int blockIndex) {
